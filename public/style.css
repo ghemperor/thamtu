@@ -1,0 +1,587 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Nunito:wght@400;700&display=swap');
+
+:root {
+    --bg-color: #0a0a0c;
+    --card-bg: #16161a;
+    --text-primary: #e0e0e0;
+    --text-secondary: #94a1b2;
+    --accent-red: #ff4757;
+    --accent-gold: #ffa502;
+    --accent-blue: #3742fa;
+    --tile-cause: #e74c3c;
+    --tile-location: #d35400;
+    --tile-general: #27ae60;
+    --font-heading: 'Merriweather', serif;
+    /* Good Vietnamese support */
+    --font-body: 'Nunito', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    padding-bottom: 200px;
+    /* Space for fixed chat/actions */
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-heading);
+    margin: 0.5rem 0;
+}
+
+h1 {
+    text-align: center;
+    color: var(--accent-red);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.screen {
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Login */
+#login-screen {
+    justify-content: center;
+}
+
+.input-group {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 300px;
+}
+
+input {
+    background: var(--card-bg);
+    border: 1px solid #333;
+    padding: 1rem;
+    color: white;
+    font-size: 1rem;
+    border-radius: 4px;
+}
+
+button {
+    background: linear-gradient(45deg, #2c3e50, #000);
+    border: 1px solid var(--text-secondary);
+    color: var(--accent-gold);
+    padding: 1rem 2rem;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+button:hover {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+}
+
+/* Lobby */
+.player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 2rem 0;
+}
+
+.player-card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #333;
+}
+
+.player-card.ready {
+    border-color: var(--tile-general);
+    color: var(--tile-general);
+}
+
+/* Game Board */
+header {
+    width: 100%;
+    border-bottom: 1px solid #333;
+    padding: 10px 0;
+    text-align: center;
+    background: #000;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    font-family: var(--font-heading);
+    color: var(--accent-gold);
+}
+
+.tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.scene-tile {
+    background: #1a1a1a;
+    border-left: 5px solid #555;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.scene-tile.cause {
+    border-color: var(--tile-cause);
+}
+
+.scene-tile.location {
+    border-color: var(--tile-location);
+}
+
+.scene-tile.general {
+    border-color: var(--tile-general);
+}
+
+.tile-header {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+
+.tile-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.tile-option {
+    padding: 4px 8px;
+    background: #252525;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    cursor: default;
+}
+
+.tile-option.selected {
+    background: var(--accent-red);
+    color: white;
+    font-weight: bold;
+}
+
+/* Scientist interactive mode */
+.selectable .tile-option:hover {
+    background: #444;
+    cursor: pointer;
+}
+
+.player-cards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.suspect-container {
+    background: var(--card-bg);
+    border: 1px solid #333;
+    padding: 1rem;
+    border-radius: 8px;
+    width: 300px;
+    position: relative;
+}
+
+.suspect-name {
+    text-align: center;
+    font-family: var(--font-heading);
+    color: var(--accent-gold);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.badge-count {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+}
+
+.card-group h4 {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid #333;
+    margin-bottom: 5px;
+}
+
+.card-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.game-card {
+    background: #222;
+    padding: 5px;
+    font-size: 0.85rem;
+    text-align: center;
+    border: 1px solid #444;
+    border-radius: 2px;
+}
+
+.game-card.highlight {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+}
+
+.interactive .game-card:hover {
+    border-color: var(--accent-gold);
+    cursor: pointer;
+}
+
+.game-card.selected {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 5px var(--accent-red);
+}
+
+/* Action Bar */
+#action-bar {
+    position: fixed;
+    bottom: 80px;
+    /* Above chat */
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    /* Let clicks pass through if empty */
+}
+
+#action-bar button {
+    pointer-events: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.murder-btn {
+    background: linear-gradient(135deg, #8b0000, #ff0000);
+    color: white;
+    font-size: 1.2rem;
+    border: 2px solid white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.admin-btn {
+    background: linear-gradient(135deg, #16a085, #2ecc71);
+    color: white;
+    font-size: 0.9rem;
+    padding: 10px 15px;
+    border: 1px solid white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 500;
+}
+
+.admin-btn:hover {
+    background: #1abc9c;
+    transform: scale(1.05);
+}
+
+/* Chat Box */
+#chat-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    /* Collapsed state/input area */
+    background: #111;
+    border-top: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    z-index: 200;
+}
+
+#chat-messages {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    /* See through */
+}
+
+#chat-messages div {
+    pointer-events: auto;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 2px 5px;
+    margin-bottom: 2px;
+    border-radius: 3px;
+    font-size: 0.9rem;
+    align-self: flex-start;
+}
+
+#chat-messages .self {
+    align-self: flex-end;
+    background: #2c3e50;
+}
+
+#chat-messages .system {
+    align-self: center;
+    background: #e67e22;
+    color: black;
+    font-weight: bold;
+    border: 1px solid #d35400;
+    text-align: center;
+    width: 90%;
+}
+
+.game-card.noted {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 5px var(--accent-gold);
+}
+
+.game-card.selected-accuse {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 8px var(--accent-red);
+    background: #500;
+}
+
+.chat-input-area {
+    height: 100%;
+    display: flex;
+    padding: 10px;
+    box-sizing: border-box;
+    background: #000;
+}
+
+#chat-input {
+    flex: 1;
+    margin-right: 10px;
+}
+
+#btn-send-chat {
+    padding: 0 1rem;
+    font-size: 0.8rem;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    border-radius: 8px;
+    border: 1px solid var(--accent-red);
+    text-align: center;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .game-info {
+        font-size: 0.8rem;
+    }
+
+    .suspect-container {
+        width: 100%;
+    }
+}
+
+/* --- LOGS --- */
+#log-container {
+    position: fixed;
+    top: 60px;
+    /* Below header */
+    right: 10px;
+    width: 250px;
+    height: 200px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--accent-gold);
+    border-radius: 4px;
+    padding: 10px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    /* Let clicks pass through to board if needed, but we need scroll */
+}
+
+#log-container * {
+    pointer-events: auto;
+}
+
+#log-container h4 {
+    margin: 0 0 5px 0;
+    color: var(--accent-gold);
+    font-size: 0.9rem;
+    text-align: center;
+    border-bottom: 1px solid #555;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#log-list {
+    flex: 1;
+    overflow-y: auto;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.75rem;
+}
+
+.log-item {
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #333;
+}
+
+.log-item.phase {
+    color: var(--accent-blue);
+    font-weight: bold;
+}
+
+.log-item.clue {
+    color: var(--accent-gold);
+}
+
+.log-item.alert {
+    color: var(--accent-red);
+    font-weight: bold;
+    animation: pulseRed 1s infinite;
+}
+
+.log-item.success {
+    color: #2ecc71;
+}
+
+.log-item.fail {
+    color: #e74c3c;
+}
+
+.log-item.info {
+    color: #ccc;
+}
+
+/* --- REACTIONS --- */
+#context-menu {
+    position: fixed;
+    background: #222;
+    border: 1px solid var(--accent-gold);
+    padding: 5px;
+    border-radius: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 3000;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.2s;
+}
+
+#context-menu span {
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#context-menu span:hover {
+    transform: scale(1.3);
+}
+
+.floating-emoji {
+    position: fixed;
+    font-size: 3rem;
+    pointer-events: none;
+    z-index: 2500;
+    animation: floatUpFade 2s ease-out forwards;
+    transform: translate(-50%, -50%);
+    /* Center on coords */
+}
+
+@keyframes floatUpFade {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -150px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* Hide Log on small mobile if needed */
+@media (max-width: 600px) {
+    #log-container {
+        width: 150px;
+        height: 150px;
+        font-size: 0.6rem;
+        opacity: 0.8;
+    }
+}

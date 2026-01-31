@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deception: Murder in Hong Kong (Tiếng Việt)</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- Connecting / Login Screen -->
+        <div id="login-screen" class="screen">
+            <h1>Deception</h1>
+            <h2>Bản Tiếng Việt</h2>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Nhập biệt danh..." maxlength="12">
+                <button id="btn-join">Tham gia</button>
+            </div>
+        </div>
+
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen hidden">
+            <h1>Phòng Chờ</h1>
+
+            <!-- ADMIN CONTROLS -->
+            <div id="admin-controls" class="hidden"
+                style="background: #252525; padding: 10px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #444;">
+                <h3 style="color: #f1c40f; margin-top:0;">Cài Đặt Game (Chủ Phòng)</h3>
+                <label style="display:block; margin: 5px 0;">
+                    <input type="checkbox" id="chk-accomplice"> Thêm Tòng Phạm
+                </label>
+                <label style="display:block; margin: 5px 0;">
+                    <input type="checkbox" id="chk-witness"> Thêm Nhân Chứng
+                </label>
+            </div>
+
+            <div id="player-list" class="player-grid"></div>
+            <div class="controls">
+                <button id="btn-ready">Sẵn Sàng</button>
+                <button id="btn-start" class="hidden">Bắt Đầu Game</button>
+            </div>
+            <p id="wait-msg" class="hidden" style="color: #999; margin-top: 10px;">Chờ chủ phòng bắt đầu...</p>
+        </div>
+
+        <!-- Role Reveal Screen (Brief) -->
+        <div id="role-screen" class="screen hidden">
+            <h1>MẬT VỤ</h1>
+            <div class="role-card">
+                <h2 id="my-role">Thám Tử</h2>
+                <p id="role-desc">Hãy tìm ra sự thật.</p>
+            </div>
+        </div>
+
+        <!-- Game Board -->
+        <div id="game-screen" class="screen hidden">
+            <header>
+                <div class="game-info">
+                    <span id="role-display">Vai: ???</span>
+                    <span id="round-display">Vòng: 1</span>
+                    <span id="badge-display">Phù Hiệu: Còn</span>
+                </div>
+            </header>
+
+            <main>
+                <!-- Scientist View: Tiles -->
+                <div id="scientist-panel" class="panel hidden">
+                    <h3>Thông điệp từ Pháp Y (Bạn là Pháp Y)</h3>
+                    <div id="tiles-container" class="tiles-grid"></div>
+                </div>
+
+                <!-- Public View: Tiles (Read Only) -->
+                <div id="public-tiles-panel" class="panel">
+                    <h3>Manh mối hiện trường</h3>
+                    <div id="public-tiles-container" class="tiles-grid"></div>
+                </div>
+
+                <!-- Players and Cards -->
+                <div id="table-area">
+                    <h3>Danh Sách Nghi Phạm</h3>
+                    <div id="other-players" class="player-cards-grid"></div>
+                </div>
+
+                <!-- Action Buttons (Sticky Bottom) -->
+                <div id="action-bar" class="hidden">
+                    <button id="btn-commit-crime" class="action-btn murder-btn">GÂY ÁN (Chọn 2 thẻ)</button>
+                </div>
+            </main>
+
+            <!-- Chat Box -->
+            <div id="chat-container">
+                <div id="chat-messages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Thảo luận...">
+                    <button id="btn-send-chat">Gửi</button>
+                </div>
+            </div>
+
+            <!-- Action Modal -->
+            <div id="modal" class="modal hidden">
+                <div class="modal-content">
+                    <h2 id="modal-title">Hành Động</h2>
+                    <p id="modal-desc">Chọn...</p>
+                    <div id="modal-selection"></div>
+                    <div class="modal-buttons">
+                        <button id="btn-confirm-action">Xác Nhận</button>
+                        <button id="btn-cancel-action">Hủy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen hidden">
+            <h1 id="winner-text">Kết Thúc</h1>
+            <p id="game-over-reason" style="color: #ccc; margin-bottom: 20px;"></p>
+            <div id="solution-reveal"></div>
+            <button id="btn-restart">Chờ xử lý...</button>
+        </div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+
+</html>

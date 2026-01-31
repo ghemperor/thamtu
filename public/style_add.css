@@ -1,0 +1,132 @@
+/* --- LOGS --- */
+#log-container {
+    position: fixed;
+    top: 60px;
+    /* Below header */
+    right: 10px;
+    width: 250px;
+    height: 200px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--accent-gold);
+    border-radius: 4px;
+    padding: 10px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    /* Let clicks pass through to board if needed, but we need scroll */
+}
+
+#log-container * {
+    pointer-events: auto;
+}
+
+#log-container h4 {
+    margin: 0 0 5px 0;
+    color: var(--accent-gold);
+    font-size: 0.9rem;
+    text-align: center;
+    border-bottom: 1px solid #555;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#log-list {
+    flex: 1;
+    overflow-y: auto;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.75rem;
+}
+
+.log-item {
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #333;
+}
+
+.log-item.phase {
+    color: var(--accent-blue);
+    font-weight: bold;
+}
+
+.log-item.clue {
+    color: var(--accent-gold);
+}
+
+.log-item.alert {
+    color: var(--accent-red);
+    font-weight: bold;
+    animation: pulseRed 1s infinite;
+}
+
+.log-item.success {
+    color: #2ecc71;
+}
+
+.log-item.fail {
+    color: #e74c3c;
+}
+
+.log-item.info {
+    color: #ccc;
+}
+
+/* --- REACTIONS --- */
+#context-menu {
+    position: fixed;
+    background: #222;
+    border: 1px solid var(--accent-gold);
+    padding: 5px;
+    border-radius: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 3000;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.2s;
+}
+
+#context-menu span {
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#context-menu span:hover {
+    transform: scale(1.3);
+}
+
+.floating-emoji {
+    position: fixed;
+    font-size: 3rem;
+    pointer-events: none;
+    z-index: 2500;
+    animation: floatUpFade 2s ease-out forwards;
+    transform: translate(-50%, -50%);
+    /* Center on coords */
+}
+
+@keyframes floatUpFade {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -150px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* Hide Log on small mobile if needed */
+@media (max-width: 600px) {
+    #log-container {
+        width: 150px;
+        height: 150px;
+        font-size: 0.6rem;
+        opacity: 0.8;
+    }
+}
