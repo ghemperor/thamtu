@@ -75,38 +75,62 @@
                 </div>
             </header>
 
-            <main>
-                <!-- Scientist View: Tiles -->
-                <div id="scientist-panel" class="panel hidden">
-                    <h3>Thông điệp từ Pháp Y (Bạn là Pháp Y)</h3>
-                    <div id="tiles-container" class="tiles-grid"></div>
+            <div id="game-layout">
+                <!-- LEFT COLUMN: Game Area -->
+                <div id="game-main-content">
+                    <!-- Scientist View: Tiles -->
+                    <div id="scientist-panel" class="panel hidden">
+                        <h3>Thông điệp từ Pháp Y (Bạn là Pháp Y)</h3>
+                        <div id="tiles-container" class="tiles-grid"></div>
+                    </div>
+
+                    <!-- Public View: Tiles (Read Only) -->
+                    <div id="public-tiles-panel" class="panel">
+                        <h3>Manh mối hiện trường</h3>
+                        <div id="public-tiles-container" class="tiles-grid"></div>
+                    </div>
+
+                    <!-- Players and Cards -->
+                    <div id="table-area">
+                        <h3>Danh Sách Nghi Phạm</h3>
+                        <div id="other-players" class="player-cards-grid"></div>
+                    </div>
                 </div>
 
-                <!-- Public View: Tiles (Read Only) -->
-                <div id="public-tiles-panel" class="panel">
-                    <h3>Manh mối hiện trường</h3>
-                    <div id="public-tiles-container" class="tiles-grid"></div>
-                </div>
+                <!-- RIGHT COLUMN: Sidebar (Chat, Logs, Controls) -->
+                <div id="game-sidebar">
+                    <!-- Admin Controls Area -->
+                    <div id="admin-panel-sidebar" class="hidden"></div>
 
-                <!-- Players and Cards -->
-                <div id="table-area">
-                    <h3>Danh Sách Nghi Phạm</h3>
-                    <div id="other-players" class="player-cards-grid"></div>
-                </div>
+                    <!-- Unified Tabs Container -->
+                    <div id="sidebar-tabs">
+                        <div class="tab-header">
+                            <button id="tab-btn-chat" class="tab-btn active">💬 Thảo luận</button>
+                            <button id="tab-btn-log" class="tab-btn">📓 Nhật Ký</button>
+                        </div>
 
-                <!-- Action Buttons (Sticky Bottom) -->
-                <div id="action-bar" class="hidden">
-                    <button id="btn-commit-crime" class="action-btn murder-btn">GÂY ÁN (Chọn 2 thẻ)</button>
-                </div>
-            </main>
+                        <div id="tab-content-area">
+                            <!-- CHAT TAB -->
+                            <div id="tab-chat" class="tab-pane active">
+                                <div id="chat-messages"></div>
+                                <div class="chat-input-area">
+                                    <input type="text" id="chat-input" placeholder="Nói gì đó..." autocomplete="off">
+                                    <button id="btn-send-chat">Gửi</button>
+                                </div>
+                            </div>
 
-            <!-- Chat Box -->
-            <div id="chat-container">
-                <div id="chat-messages"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input" placeholder="Thảo luận...">
-                    <button id="btn-send-chat">Gửi</button>
+                            <!-- LOG TAB -->
+                            <div id="tab-log" class="tab-pane">
+                                <div id="log-list"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Action Buttons (Sticky Bottom - Global) -->
+            <div id="action-bar" class="hidden">
+                <button id="btn-commit-crime" class="action-btn murder-btn">GÂY ÁN (Chọn 2 thẻ)</button>
             </div>
 
             <!-- Action Modal -->

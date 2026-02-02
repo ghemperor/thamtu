@@ -148,7 +148,9 @@ socket.on('chat_message', (msg) => {
         const isSelf = msg.id === myId;
         div.className = isSelf ? 'self' : '';
     }
-    div.innerText = msg.type === 'system' ? msg.text : `${msg.name}: ${msg.text}`;
+    div.innerHTML = msg.type === 'system'
+        ? msg.text
+        : `<strong>${msg.name}</strong>: ${msg.text}`;
     dom.chatMessages.appendChild(div);
     dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
 });
@@ -759,41 +761,92 @@ function populateGameOver(state) {
     }
 }
 
-// --- LOGS ---
-function addLogEntry(entry) {
-    let logContainer = document.getElementById('log-container');
+// --- RENDER ADMIN CONTROLS ---
+function renderAdminGameControls(state) {
+    if (myId !== state.adminId) return;
 
-    // Create container if missing
-    if (!logContainer) {
-        logContainer = document.createElement('div');
-        logContainer.id = 'log-container';
-        // Added Minimize Button (-)
-        logContainer.innerHTML = '<h4>📓 Nhật Ký <span id="btn-toggle-log" style="cursor:pointer; float:right;">➖</span></h4><div id="log-list"></div>';
+    let panel = document.getElementById('admin-panel-sidebar');
+    // Render into sidebar panel
+    if (!panel) return;
 
-        document.body.appendChild(logContainer);
+    panel.classList.remove('hidden');
+    panel.innerHTML = ''; // Clear previous
 
-        // Toggle Logic
-        const btnToggle = document.getElementById('btn-toggle-log');
-        const list = document.getElementById('log-list');
-        btnToggle.onclick = () => {
-            if (list.style.display === 'none') {
-                list.style.display = 'block';
-                btnToggle.innerText = '➖';
-                logContainer.style.height = '200px'; // Restore height
-            } else {
-                list.style.display = 'none';
-                btnToggle.innerText = '➕';
-                logContainer.style.height = 'auto'; // Shrink
+    const ctrlDiv = document.createElement('div');
+    ctrlDiv.style.background = '#333';
+    ctrlDiv.style.padding = '10px';
+    ctrlDiv.style.borderRadius = '5px';
+    ctrlDiv.style.border = '1px solid #555';
+
+    // Timer Display
+    if (state.timer) {
+        // Javascript-side countdown update handled elsewhere (maybe add here?)
+        ctrlDiv.innerHTML += `<div style="text-align:center; font-size:1.5rem; color:${state.timer.duration < 10 ? 'red' : '#f1c40f'}; margin-bottom:10px;">⏳ ${state.timer.duration}s</div>`;
+    }
+
+    // Next Round Button
+    if (state.gameState === 'INVESTIGATION' && state.round < state.maxRounds) {
+        const btnNext = document.createElement('button');
+        btnNext.className = 'admin-btn';
+        btnNext.innerHTML = '📱 QUA VÒNG MỚI >>';
+        btnNext.onclick = () => {
+            if (confirm("Chuyển sang vòng tiếp theo?")) {
+                socket.emit('next_round');
             }
         };
+        ctrlDiv.appendChild(btnNext);
+    }
+
+    // Final Chance / Game Over handled automatically by server timer usually, but can add force end here if needed.
+
+    panel.appendChild(ctrlDiv);
+}
+
+// --- SIDEBAR TABS LOGIC ---
+const tabBtnChat = document.getElementById('tab-btn-chat');
+const tabBtnLog = document.getElementById('tab-btn-log');
+const tabChat = document.getElementById('tab-chat');
+const tabLog = document.getElementById('tab-log');
+
+function switchTab(tabName) {
+    if (tabName === 'chat') {
+        tabBtnChat.classList.add('active');
+        tabBtnLog.classList.remove('active');
+        tabChat.classList.add('active');
+        tabLog.classList.remove('active');
+    } else {
+        tabBtnChat.classList.remove('active');
+        tabBtnLog.classList.add('active');
+        tabChat.classList.remove('active');
+        tabLog.classList.remove('active');
+        tabLog.classList.add('active'); // Ensure tabLog is active
+        // Clear unread notification if implemented
+        tabBtnLog.style.color = '';
+    }
+}
+
+if (tabBtnChat && tabBtnLog) {
+    tabBtnChat.onclick = () => switchTab('chat');
+    tabBtnLog.onclick = () => switchTab('log');
+}
+
+// --- LOGS ---
+function addLogEntry(entry) {
+    // Target the new log list in tab
+    const list = document.getElementById('log-list');
+    if (!list) return;
+
+    // Notification if tab is not active
+    if (!tabLog.classList.contains('active')) {
+        tabBtnLog.style.color = '#ff4757'; // Red alert color
     }
 
     // CHECK FOR START GAME NOTIFICATION
     if (entry.type === 'phase' && entry.text.includes('Hung thủ đã chọn')) {
         alert("🔪 HUNG THỦ ĐÃ HÀNH ĐỘNG! \nTRÒ CHƠI BẮT ĐẦU!");
+        switchTab('log'); // Auto switch to log on game start
     }
 
-    const list = document.getElementById('log-list');
     const item = document.createElement('div');
     item.className = `log-item ${entry.type}`;
 

@@ -327,44 +327,42 @@ header {
 
 /* Chat Box */
 #chat-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
+    /* Fixed removed, now flex child of sidebar */
     width: 100%;
-    height: 70px;
-    /* Collapsed state/input area */
+    min-height: 200px;
+    /* Ensure visible */
     background: #111;
     border-top: 1px solid #333;
     display: flex;
     flex-direction: column;
-    z-index: 200;
+    margin-top: auto;
+    /* Push to bottom of sidebar if sidebar has height */
+    overflow: hidden;
 }
 
 #chat-messages {
-    position: absolute;
-    bottom: 70px;
-    left: 0;
+    /* Absolute removed */
+    flex: 1;
     width: 100%;
-    max-height: 200px;
     overflow-y: auto;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.3);
     padding: 10px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    pointer-events: none;
-    /* See through */
 }
 
 #chat-messages div {
-    pointer-events: auto;
+    /* pointer-events: auto; removed (not needed as parent is interactive now) */
     background: rgba(0, 0, 0, 0.6);
     color: white;
-    padding: 2px 5px;
-    margin-bottom: 2px;
-    border-radius: 3px;
+    padding: 4px 8px;
+    margin-bottom: 5px;
+    border-radius: 4px;
     font-size: 0.9rem;
     align-self: flex-start;
+    word-wrap: break-word;
+    /* Fix long text overflow */
 }
 
 #chat-messages .self {
@@ -411,6 +409,44 @@ header {
     font-size: 0.8rem;
 }
 
+/* --- NEW LAYOUT --- */
+#game-layout {
+    display: flex;
+    flex-wrap: wrap;
+    /* Responsive wrap */
+    gap: 20px;
+    width: 100%;
+    margin-top: 20px;
+    align-items: flex-start;
+}
+
+#game-main-content {
+    flex: 3;
+    /* occupies 3/4 */
+    min-width: 60%;
+}
+
+#game-sidebar {
+    flex: 1;
+    /* occupies 1/4 */
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: #111;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    /* Sticky sidebar on desktop */
+    position: sticky;
+    top: 80px;
+    height: 85vh;
+    /* Fixed height to force overflow scroll */
+    max-height: 85vh;
+    overflow: hidden;
+    /* Ensure nothing spills out */
+}
+
 /* Modal */
 .modal {
     position: fixed;
@@ -453,61 +489,105 @@ header {
     }
 }
 
-/* --- LOGS --- */
-#log-container {
-    position: fixed;
-    top: 60px;
-    /* Below header */
-    right: 10px;
-    width: 250px;
-    height: 200px;
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid var(--accent-gold);
-    border-radius: 4px;
-    padding: 10px;
-    z-index: 100;
+/* --- SIDEBAR TABS --- */
+#sidebar-tabs {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    pointer-events: none;
-    /* Let clicks pass through to board if needed, but we need scroll */
+    overflow: hidden;
+    /* Contain children */
+    border: 1px solid #333;
+    border-radius: 5px;
+    background: #111;
 }
 
-#log-container * {
-    pointer-events: auto;
-}
-
-#log-container h4 {
-    margin: 0 0 5px 0;
-    color: var(--accent-gold);
-    font-size: 0.9rem;
-    text-align: center;
-    border-color: #666;
-}
-
-.tile-hidden {
-    background: #1a1a1a;
-    border: 1px dashed #444;
+.tab-header {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: not-allowed;
+    background: #222;
+    border-bottom: 1px solid #333;
 }
 
-.tile-header {
-    background: rgba(0, 0, 0, 0.3);
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px;
+    color: #888;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    font-weight: bold;
 }
 
+.tab-btn:hover {
+    background: #2a2a2a;
+    color: #ccc;
+}
+
+.tab-btn.active {
+    color: var(--accent-gold);
+    border-bottom: 2px solid var(--accent-gold);
+    background: #1a1a1a;
+}
+
+#tab-content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.tab-pane {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.tab-pane.active {
+    display: flex;
+}
+
+/* Chat Styling Update */
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Critical for flex scrolling */
+}
+
+.chat-input-area {
+    padding: 10px;
+    background: #151515;
+    border-top: 1px solid #333;
+    display: flex;
+    flex: none;
+    /* Do not grow, do not shrink */
+    height: 60px;
+    /* Fixed height */
+    box-sizing: border-box;
+    /* Include padding in height */
+}
+
+/* Log Styling Update */
 #log-list {
     flex: 1;
     overflow-y: auto;
+    padding: 10px;
     font-family: 'Roboto Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
 }
 
+/* --- LOG ITEM COLORS --- */
 .log-item {
-    margin-bottom: 4px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #222;
     padding-bottom: 4px;
-    border-bottom: 1px solid #333;
 }
 
 .log-item.phase {
@@ -522,7 +602,6 @@ header {
 .log-item.alert {
     color: var(--accent-red);
     font-weight: bold;
-    animation: pulseRed 1s infinite;
 }
 
 .log-item.success {
@@ -534,9 +613,13 @@ header {
 }
 
 .log-item.info {
-    color: #ccc;
+    color: #aaa;
 }
 
+/* Clean up old log container if it exists in styles */
+#log-container {
+    display: none;
+}
 /* --- REACTIONS --- */
 #context-menu {
     position: fixed;
@@ -568,34 +651,12 @@ header {
     z-index: 2500;
     animation: floatUpFade 2s ease-out forwards;
     transform: translate(-50%, -50%);
-    /* Center on coords */
 }
 
 @keyframes floatUpFade {
-    0% {
-        transform: translate(-50%, -50%) scale(0.5);
-        opacity: 0;
-    }
-
-    20% {
-        transform: translate(-50%, -50%) scale(1.2);
-        opacity: 1;
-    }
-
-    100% {
-        transform: translate(-50%, -150px) scale(1);
-        opacity: 0;
-    }
-}
-
-/* Hide Log on small mobile if needed */
-@media (max-width: 600px) {
-    #log-container {
-        width: 150px;
-        height: 150px;
-        font-size: 0.6rem;
-        opacity: 0.8;
-    }
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -150px) scale(1); opacity: 0; }
 }
 
 /* --- VOICE CHAT --- */
@@ -606,16 +667,11 @@ header {
 }
 
 @keyframes pulse-glow {
-    from {
-        box-shadow: 0 0 10px #2ecc71;
-    }
-
-    to {
-        box-shadow: 0 0 25px #2ecc71;
-    }
+    from { box-shadow: 0 0 10px #2ecc71; }
+    to { box-shadow: 0 0 25px #2ecc71; }
 }
 
-/* --- SUSPICION (Votes Received) --- */
+/* --- SUSPICION --- */
 .suspect-glow {
     border: 2px solid #ff4757 !important;
     box-shadow: 0 0 15px rgba(255, 71, 87, 0.6) !important;

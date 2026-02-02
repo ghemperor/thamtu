@@ -94,7 +94,13 @@ class Game {
         if (id === this.adminId && this.players.length > 0) {
             this.adminId = this.players[0].id; // Reassign admin
         }
-        this.broadcastState();
+
+        if (this.players.length === 0) {
+            this.resetGame(); // Auto reset if everyone leaves
+            console.log("ALL PLAYERS LEFT. GAME RESET.");
+        } else {
+            this.broadcastState();
+        }
     }
 
     setPlayerReady(id, isReady) {
