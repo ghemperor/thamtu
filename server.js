@@ -29,6 +29,20 @@ io.on('connection', (socket) => {
         game.handleReaction(socket.id, payload.targetId, payload.emoji);
     });
 
+    // --- VOICE CHAT SIGNALING ---
+    socket.on('voice_join', () => {
+        // Notify others that this user is ready for voice
+        socket.broadcast.emit('voice_user_joined', socket.id);
+    });
+
+    socket.on('voice_signal', (payload) => {
+        // payload: { to: targetId, signal: ... }
+        io.to(payload.to).emit('voice_signal', {
+            from: socket.id,
+            signal: payload.signal
+        });
+    });
+
     socket.on('next_round', () => {
         // Only Admin or Scientist should trigger this really, but for now open
         game.nextRound();

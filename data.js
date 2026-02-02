@@ -20,42 +20,42 @@ const SCENE_TILES = [
     {
         name: "Nguyên nhân cái chết",
         type: "cause", // Red tile, mandatory
-        options: ["Ngạt thở", "Chấn thương nặng", "Mất máu", "Bệnh lý", "Ngộ độc"]
+        options: ["Ngạt thở", "Chấn thương nặng", "Mất máu", "Bệnh lý", "Ngộ độc", "Tai nạn"]
     },
     {
-        name: "Hiện trường vụ án",
+        name: "Vị trí vụ án",
         type: "location", // Brown tile
-        options: ["Phòng khách", "Phòng ngủ", "Bếp", "Phòng tắm", "Ban công", "Văn phòng", "Vườn", "Gara", "Công viên", "Đường phố", "Trường học", "Bệnh viện", "Khách sạn", "Nhà hàng", "Quán Bar", "Club", "Cửa hàng", "Trung tâm nua sắm", "Rạp phim", "Nhà hát", "Bảo tàng", "Thư viện", "Phòng Gym", "Hồ bơi", "Bãi biển", "Rừng", "Núi", "Sông", "Hồ", "Biển"]
+        options: ["Trong nhà", "Ngoài trời", "Nơi công cộng", "Nơi riêng tư", "Dưới nước", "Trong rừng"]
     },
     {
-        name: "Dấu vết tại hiện trường",
+        name: "Tình trạng thi thể",
         type: "general", // Green tile
-        options: ["Vân tay", "Dấu chân", "Vết bầm", "Vết máu", "Dịch cơ thể", "Sẹo", "Hình xăm", "Vết trang điểm", "Nước hoa", "Thuốc lá", "Rượu", "Ma túy", "Thức ăn", "Đất", "Bùn", "Bụi", "Tro tàn", "Mảnh kính", "Kim loại", "Nhựa", "Vải", "Giấy", "Sơn", "Dầu", "Nước", "Đá lạnh", "Tuyết", "Lửa", "Khói", "Khí ga"]
+        options: ["Còn ấm", "Cứng đờ", "Phân hủy", "Không nguyên vẹn", "Bị thiêu cháy", "Bình thường"]
     },
     {
-        name: "Tình trạng hiện trường",
+        name: "Dấu vết để lại",
         type: "general",
-        options: ["Bừa bộn", "Gọn gàng", "Tối tăm", "Sáng sủa", "Nóng", "Lạnh", "Ẩm ướt", "Khô ráo", "Yên tĩnh", "Ồn ào", "Có mùi hôi", "Thơm tho", "Đông đúc", "Vắng vẻ", "Đã khóa", "Mở cửa", "Hư hại", "Nguyên vẹn", "Cũ kỹ", "Mới", "Hiện đại", "Cổ điển", "Sang trọng", "Rẻ tiền", "Ấm cúng", "Rộng rãi", "Ngăn nắp", "Hỗn loạn", "An toàn", "Nguy hiểm"]
+        options: ["Hỗn loạn", "Sạch sẽ", "Dấu chân lạ", "Vật dụng vỡ", "Vết kéo lê", "Mảnh vụn"]
     },
     {
-        name: "Trang phục nạn nhân",
+        name: "Biểu hiện nạn nhân",
         type: "general",
-        options: ["Gọn gàng", "Xộc xệch", "Sang trọng", "Thường phục", "Đồng phục", "Đồ công sở", "Đồ thể thao", "Đồ ngủ", "Đồ bơi", "Đồ lót", "Khỏa thân", "Hóa trang", "Đồ mùa đông", "Đồ mùa hè", "Đồ mùa xuân", "Đồ mùa thu", "Trang trọng", "Dự tiệc", "Đám cưới", "Đám tang", "Tôn giáo", "Truyền thống", "Quân đội", "Y tế", "Công trường", "Cảnh sát", "Cứu hỏa", "Học sinh", "Đầu bếp", "Họa sĩ"]
+        options: ["Hoảng loạn", "Bình thản", "Đau đớn", "Bất ngờ", "Giận dữ", "Sợ hãi"]
     },
     {
-        name: "Dáng người nạn nhân",
+        name: "Thời điểm phát hiện",
         type: "general",
-        options: ["To lớn", "Gầy gò", "Cao", "Thấp", "Cơ bắp", "Béo", "Da bọc xương", "Trung bình", "Khỏe mạnh", "Yếu ớt", "Săn chắc", "Nhão", "Dáng thể thao", "Mũm mĩm", "Tròn trịa", "Mảnh khảnh", "Nhỏ nhắn", "Khổng lồ", "Tí hon", "Dị dạng", "Bị thương", "Khỏe mạnh", "Ốm yếu", "Mang thai", "Trẻ", "Già", "Trẻ em", "Sơ sinh", "Thiếu niên", "Người lớn"]
+        options: ["Sáng sớm", "Buổi trưa", "Hoàng hôn", "Nửa đêm", "Rạng sáng", "Giờ cao điểm"]
     },
     {
-        name: "Thời điểm gây án",
+        name: "Đặc điểm hung thủ",
         type: "general",
-        options: ["Ngày thường", "Cuối tuần", "Ngày lễ", "Nắng", "Mưa", "Nhiều mây", "Có gió", "Tuyết rơi", "Bão", "Sương mù", "Nóng", "Lạnh", "Ấm áp", "Mát mẻ", "Khô", "Ẩm", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật", "Buổi sáng", "Buổi chiều", "Buổi tối", "Ban đêm", "Bình minh", "Hoàng hôn", "Nửa đêm"]
+        options: ["Cao lớn", "Thấp bé", "Khéo léo", "Vụng về", "Mạnh mẽ", "Thông minh"]
     },
     {
-        name: "Thời gian diễn ra",
+        name: "Quan hệ với nạn nhân",
         type: "general",
-        options: ["Tức thời", "Ngắn ngủi", "Dần dần", "Kéo dài", "Vài giây", "Vài phút", "Vài giờ", "Vài ngày", "Vài tuần", "Vài tháng", "Vài năm", "Thập kỷ", "Thế kỷ", "Thiên niên kỷ", "Vô tận", "Mãi mãi", "Không bao giờ", "Không rõ", "Thay đổi", "Định kỳ", "Liên tục", "Ngắt quãng", "Ngẫu nhiên", "Theo chu kỳ", "Một lần", "Hai lần", "Nhiều lần", "Thường xuyên", "Hiếm khi", "Luôn luôn"]
+        options: ["Người lạ", "Người quen", "Kẻ thù", "Người yêu", "Đồng nghiệp", "Họ hàng"]
     }
 ];
 

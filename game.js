@@ -145,6 +145,9 @@ class Game {
                     p.means = [];
                     p.evidence = [];
                 }
+
+                // Reset votes
+                p.votesReceived = [];
             });
 
             // Setup Tiles
@@ -153,7 +156,7 @@ class Game {
 
             this.sceneTiles = [
                 SCENE_TILES.find(t => t.name === 'Nguyên nhân cái chết'),
-                SCENE_TILES.find(t => t.name === 'Hiện trường vụ án'),
+                SCENE_TILES.find(t => t.name === 'Vị trí vụ án'), // Updated Name
                 ...selectedGeneral
             ];
 
@@ -178,10 +181,10 @@ class Game {
 
         this.solution = {
             murdererId: null,
-            means: null,
-            evidence: null,
-            story: null,
-            suggestions: null
+            means: "",
+            evidence: "",
+            story: "",
+            suggestions: { cause: "" }
         };
 
         this.sceneTiles = [];
@@ -191,10 +194,11 @@ class Game {
         // Reset Players
         this.players.forEach(p => {
             p.role = null;
-            p.means = [];
+            p.means = []; // Ensure arrays
             p.evidence = [];
-            p.isReady = false; // Everyone needs to ready up again
+            p.isReady = false;
             p.badges = 1;
+            p.votesReceived = [];
         });
 
         this.broadcastState();
@@ -355,8 +359,11 @@ class Game {
                 this.broadcastState();
             }
         } else {
-            const investigators = this.players.filter(p => p.role !== 'Pháp Y');
-            const badgesLeft = investigators.reduce((sum, p) => sum + p.badges, 0);
+            // Count badges of Investigators + Witness only (Good Guys)
+            // Murderer/Accomplice badges don't count towards the "Game Over by exhaustion" rule
+            const goodGuys = this.players.filter(p => !['Pháp Y', 'Hung Thủ', 'Tòng Phạm'].includes(p.role));
+            const badgesLeft = goodGuys.reduce((sum, p) => sum + p.badges, 0);
+
             if (badgesLeft === 0) {
                 this.gameState = 'GAME_OVER';
                 this.winner = 'MURDERER';
@@ -365,8 +372,14 @@ class Game {
                 this.io.emit('play_sound', 'lose');
             } else {
                 this.io.to(playerId).emit('guess_result', { success: false });
-                this.broadcastState();
             }
+
+            // Suspicion Tracking: Record who voted for this target
+            if (target) {
+                if (!target.votesReceived) target.votesReceived = [];
+                target.votesReceived.push(p.name);
+            }
+            this.broadcastState();
         }
     }
 
@@ -409,9 +422,26 @@ class Game {
                 role: (this.gameState === 'GAME_OVER' || pl.id === playerId) ? pl.role : (pl.role === 'Pháp Y' ? 'Pháp Y' : '???'),
                 means: pl.means,
                 evidence: pl.evidence,
-                badges: pl.badges
+                badges: pl.badges,
+                votesReceived: pl.votesReceived || []
             })),
-            sceneTiles: this.sceneTiles,
+            // Logic: Scientists see all tiles. Investigators see only tiles that have a clue set.
+            sceneTiles: (this.gameState === 'GAME_OVER' || playerId === this.scientistId)
+                ? this.sceneTiles
+                : this.sceneTiles.map((t, idx) => {
+                    // Always show the first tile (Cause of Death) or if a clue has been given
+                    if (idx === 0 || this.clues[idx] !== null && this.clues[idx] !== undefined) {
+                        return t;
+                    } else {
+                        // Hidden Tile Placeholder
+                        return {
+                            name: "???",
+                            type: t.type,
+                            options: [], // Hide options
+                            isHidden: true
+                        };
+                    }
+                }),
             clues: this.clues,
             round: this.round,
             maxRounds: this.maxRounds,

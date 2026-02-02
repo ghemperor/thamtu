@@ -488,7 +488,7 @@ function renderSuspects(state) {
 
         nameDiv.innerText = visualName;
 
-        // WITNESS GUESS CLICKABLE
+        // WITNESS GUESS CLICKABLE (Restored)
         if (gameState.gameState === 'WITNESS_GUESS' && myRole === 'Hung Thủ') {
             nameDiv.style.cursor = 'pointer';
             nameDiv.style.border = '1px solid red';
@@ -504,6 +504,20 @@ function renderSuspects(state) {
 
         div.appendChild(nameDiv);
 
+        // --- SUSPICION (Votes Received) ---
+        if (p.votesReceived && p.votesReceived.length > 0) {
+            div.classList.add('suspect-glow'); // CSS class for glow
+
+            const suspicionDiv = document.createElement('div');
+            suspicionDiv.style.fontSize = '0.75rem';
+            suspicionDiv.style.color = '#ff4757';
+            suspicionDiv.style.marginTop = '-5px';
+            suspicionDiv.style.marginBottom = '5px';
+            suspicionDiv.style.textAlign = 'center';
+            suspicionDiv.innerText = `⚠️ Bị tố bởi: ${p.votesReceived.join(', ')}`;
+            div.appendChild(suspicionDiv);
+        }
+
         if (p.badges > 0) {
             const badge = document.createElement('span');
             badge.className = 'badge-count';
@@ -513,6 +527,8 @@ function renderSuspects(state) {
 
         // CARDS
         const renderCardList = (type, cards) => {
+            if (!cards || !Array.isArray(cards)) cards = []; // Safety Check
+
             const group = document.createElement('div');
             group.className = 'card-group';
             group.innerHTML = `<h4>${type === 'means' ? 'Hung Khí' : 'Vật Chứng'}</h4>`;
@@ -583,8 +599,16 @@ function renderSuspects(state) {
             return group;
         };
 
-        div.appendChild(renderCardList('means', p.means));
-        div.appendChild(renderCardList('evidence', p.evidence));
+        try {
+            div.appendChild(renderCardList('means', p.means));
+            div.appendChild(renderCardList('evidence', p.evidence));
+        } catch (err) {
+            console.error("Error rendering card list for", p.name, err);
+            const errDiv = document.createElement('div');
+            errDiv.innerText = "Lỗi hiển thị thẻ";
+            errDiv.style.color = "red";
+            div.appendChild(errDiv);
+        }
 
         dom.otherPlayers.appendChild(div);
     });
@@ -743,9 +767,30 @@ function addLogEntry(entry) {
     if (!logContainer) {
         logContainer = document.createElement('div');
         logContainer.id = 'log-container';
-        logContainer.innerHTML = '<h4>📓 Nhật Ký</h4><div id="log-list"></div>';
-        // Style handled in CSS
+        // Added Minimize Button (-)
+        logContainer.innerHTML = '<h4>📓 Nhật Ký <span id="btn-toggle-log" style="cursor:pointer; float:right;">➖</span></h4><div id="log-list"></div>';
+
         document.body.appendChild(logContainer);
+
+        // Toggle Logic
+        const btnToggle = document.getElementById('btn-toggle-log');
+        const list = document.getElementById('log-list');
+        btnToggle.onclick = () => {
+            if (list.style.display === 'none') {
+                list.style.display = 'block';
+                btnToggle.innerText = '➖';
+                logContainer.style.height = '200px'; // Restore height
+            } else {
+                list.style.display = 'none';
+                btnToggle.innerText = '➕';
+                logContainer.style.height = 'auto'; // Shrink
+            }
+        };
+    }
+
+    // CHECK FOR START GAME NOTIFICATION
+    if (entry.type === 'phase' && entry.text.includes('Hung thủ đã chọn')) {
+        alert("🔪 HUNG THỦ ĐÃ HÀNH ĐỘNG! \nTRÒ CHƠI BẮT ĐẦU!");
     }
 
     const list = document.getElementById('log-list');
@@ -813,4 +858,200 @@ function showContextMenu(x, y, targetId) {
     }, 10);
 
     document.body.appendChild(menu);
+}
+
+// --- VOICE CHAT LOGIC (WebRTC Mesh) ---
+let localStream = null;
+let peers = {}; // { otherUserId: RTCPeerConnection }
+let isMicOn = false;
+let audioContext = null;
+let analyser = null;
+
+const btnMic = document.getElementById('btn-mic');
+const voiceStatus = document.getElementById('voice-status');
+
+if (btnMic) {
+    btnMic.onclick = toggleMic;
+}
+
+async function toggleMic() {
+    if (isMicOn) {
+        // Turn OFF
+        isMicOn = false;
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        btnMic.innerText = '🔇 Bật Mic';
+        btnMic.style.background = '#e74c3c';
+        voiceStatus.innerText = 'Đã ngắt kết nối';
+
+        // Close all peers
+        Object.values(peers).forEach(pc => pc.close());
+        peers = {};
+
+        removeVisuals();
+    } else {
+        // Turn ON
+        try {
+            voiceStatus.innerText = 'Đang kết nối...';
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            isMicOn = true;
+            btnMic.innerText = '🎙️ Tắt Mic';
+            btnMic.style.background = '#2ecc71';
+            voiceStatus.innerText = 'Đang nói...';
+
+            // Init Audio Analysis for Visuals
+            setupAudioAnalysis(localStream);
+
+            // Notify Server
+            socket.emit('voice_join');
+
+        } catch (err) {
+            console.error("Mic Access Error:", err);
+            alert("Không thể truy cập Micro! Vui lòng kiểm tra quyền trình duyệt.");
+            voiceStatus.innerText = 'Lỗi truy cập Mic';
+        }
+    }
+}
+
+function removeVisuals() {
+    // Remove all speaking indicators
+    document.querySelectorAll('.speaking').forEach(el => el.classList.remove('speaking'));
+}
+
+// Socket Listeners for Voice
+socket.on('voice_user_joined', (userId) => {
+    // A new user joined voice -> We (existing user) initiate connection
+    if (!isMicOn) return; // Ignore if we are not in voice
+    console.log("Voice: User joined", userId);
+    createPeerConnection(userId, true);
+});
+
+socket.on('voice_signal', async (data) => {
+    // data: { from, signal }
+    if (!isMicOn) return;
+
+    const { from, signal } = data;
+    let pc = peers[from];
+
+    if (!pc) {
+        // Incoming connection (Answer side)
+        pc = createPeerConnection(from, false);
+    }
+
+    try {
+        if (signal.sdp) {
+            await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+            if (signal.sdp.type === 'offer') {
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                socket.emit('voice_signal', { to: from, signal: { sdp: pc.localDescription } });
+            }
+        } else if (signal.candidate) {
+            await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+        }
+    } catch (e) {
+        console.error("Signal Warning:", e);
+    }
+});
+
+function createPeerConnection(targetId, isInitiator) {
+    const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] // Public STUN
+    });
+
+    peers[targetId] = pc;
+
+    // Add local tracks
+    if (localStream) {
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    }
+
+    // Handle ICE
+    pc.onicecandidate = (event) => {
+        if (event.candidate) {
+            socket.emit('voice_signal', { to: targetId, signal: { candidate: event.candidate } });
+        }
+    };
+
+    // Handle Stream
+    pc.ontrack = (event) => {
+        console.log("Voice: Received Remote Stream from", targetId);
+        const remoteAudio = document.createElement('audio');
+        remoteAudio.srcObject = event.streams[0];
+        remoteAudio.autoplay = true;
+        // remoteAudio.controls = true; // Debugging
+        remoteAudio.style.display = 'none';
+        document.body.appendChild(remoteAudio);
+
+        // Analyze Remote Audio for Visuals
+        setupRemoteAudioAnalysis(event.streams[0], targetId);
+
+        // Cleanup on end
+        event.streams[0].onremovetrack = () => {
+            remoteAudio.remove();
+        };
+    };
+
+    if (isInitiator) {
+        pc.createOffer().then(offer => {
+            pc.setLocalDescription(offer);
+            socket.emit('voice_signal', { to: targetId, signal: { sdp: offer } });
+        });
+    }
+
+    return pc;
+}
+
+// --- AUDIO VISUALIZATION ---
+
+function setupAudioAnalysis(stream) {
+    if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser); // Loopback? No, don't connect to destination to avoid self-echo
+
+    visualize(analyser, myId);
+}
+
+function setupRemoteAudioAnalysis(stream, userId) {
+    if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    // AND connect to destination (speakers)
+    analyser.connect(audioContext.destination);
+
+    visualize(analyser, userId);
+}
+
+function visualize(analyser, userId) {
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    const checkVolume = () => {
+        if (!peers[userId] && userId !== myId) return; // Stop if disconnected
+
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        const average = sum / dataArray.length;
+
+        // Apply class if volume > threshold
+        const el = document.querySelector(`.player-card[data-id="${userId}"]`) ||
+            document.querySelector(`.suspect-container[data-id="${userId}"]`);
+
+        if (el) {
+            if (average > 10) { // Threshold
+                el.classList.add('speaking');
+            } else {
+                el.classList.remove('speaking');
+            }
+        }
+
+        requestAnimationFrame(checkVolume);
+    };
+    checkVolume();
 }
