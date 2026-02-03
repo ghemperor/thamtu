@@ -80,6 +80,10 @@ io.on('connection', (socket) => {
         game.resetGame();
     });
 
+    socket.on('toggle_suspicion', (payload) => {
+        game.toggleSuspicion(socket.id, payload.targetId, payload.card);
+    });
+
     // Chat
     socket.on('chat_message', (msg) => {
         // Broadcast to everyone including sender

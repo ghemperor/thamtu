@@ -79,7 +79,8 @@ class Game {
             means: [],
             evidence: [],
             isReady: false,
-            badges: 1
+            badges: 1,
+            suspicions: [] // New: Track soft suspicions
         });
         this.broadcastState();
     }
@@ -429,7 +430,11 @@ class Game {
                 means: pl.means,
                 evidence: pl.evidence,
                 badges: pl.badges,
-                votesReceived: pl.votesReceived || []
+                badges: pl.badges,
+                votesReceived: pl.votesReceived || [],
+                suspicions: pl.suspicions || [], // Array of { from: string, card: string }
+                // Count unique accusers (new Set logic)
+                suspicionCount: new Set((pl.suspicions || []).map(s => s.from)).size
             })),
             // Logic: Scientists see all tiles. Investigators see only tiles that have a clue set.
             sceneTiles: (this.gameState === 'GAME_OVER' || playerId === this.scientistId)
@@ -481,6 +486,28 @@ class Game {
         }
 
         return { ...publicData, ...knowledge };
+    }
+    toggleSuspicion(accuserId, targetId, cardName) {
+        if (this.gameState !== 'INVESTIGATION') return;
+
+        const accuser = this.players.find(p => p.id === accuserId);
+        const target = this.players.find(p => p.id === targetId);
+
+        if (!accuser || !target) return;
+        if (!target.suspicions) target.suspicions = [];
+
+        // Check if exists
+        const existingIdx = target.suspicions.findIndex(s => s.from === accuser.name && s.card === cardName);
+
+        if (existingIdx !== -1) {
+            // Remove (Toggle off)
+            target.suspicions.splice(existingIdx, 1);
+        } else {
+            // Add (Toggle on)
+            target.suspicions.push({ from: accuser.name, card: cardName });
+        }
+
+        this.broadcastState();
     }
 }
 

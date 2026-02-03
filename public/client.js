@@ -257,6 +257,7 @@ function render(state) {
         // Render Board
         renderTiles(state);
         renderSuspects(state);
+        renderSuspicionBoard(state); // New Sidebar Component
 
         // Story Panel (Scientist)
         if (myRole === 'Pháp Y' && state.gameState === 'INVESTIGATION' && state.solution && state.solution.story) {
@@ -554,13 +555,26 @@ function renderSuspects(state) {
                     cardDiv.classList.add('noted');
                 }
 
-                // 3. Choice (Green) - For Murderer Selection Phase
+                // 3. Selection (Green)
                 if (selectedMeans === card || selectedEvidence === card) {
                     cardDiv.classList.add('selected');
                 }
 
+                // 4. SUSPICION RENDER
+                if (p.suspicions) {
+                    const susList = p.suspicions.filter(s => s.card === card).map(s => s.from);
+                    if (susList.length > 0) {
+                        const susDiv = document.createElement('div');
+                        susDiv.className = 'suspicion-tag';
+                        susDiv.innerHTML = `🧐 ${susList.join(', ')} nghi ngờ`;
+                        cardDiv.appendChild(susDiv);
+                        // Also highlight card border if suspected?
+                        cardDiv.style.border = '1px dashed #e67e22';
+                    }
+                }
+
                 // Interactions
-                // Click -> Note
+                // Click -> Note & Broadcast Suspicion
                 cardDiv.onclick = (e) => {
                     // If in crime selection, use old logic
                     if (gameState.gameState === 'CRIME_SELECTION' && myRole === 'Hung Thủ') {
@@ -568,8 +582,16 @@ function renderSuspects(state) {
                         return;
                     }
 
-                    // Toggle Note
+                    // Toggle Note (Local Visual)
                     notedCards[card] = !notedCards[card];
+
+                    // Broadcast Suspicion (Server Logic)
+                    // Only if we are noting IT (turning ON). Or both? 
+                    // Let's sync it. Toggle on server matches toggle on client.
+                    if (gameState.gameState === 'INVESTIGATION' && myRole !== 'Pháp Y') {
+                        socket.emit('toggle_suspicion', { targetId: p.id, card: card });
+                    }
+
                     render(gameState);
                 };
 
@@ -594,6 +616,12 @@ function renderSuspects(state) {
 
                     render(gameState);
                 }
+
+                // Right Click -> Reaction Menu
+                cardDiv.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    showContextMenu(e.clientX, e.clientY, p.id); // Show menu at mouse pos
+                };
 
                 list.appendChild(cardDiv);
             });
@@ -800,6 +828,53 @@ function renderAdminGameControls(state) {
     // Final Chance / Game Over handled automatically by server timer usually, but can add force end here if needed.
 
     panel.appendChild(ctrlDiv);
+}
+
+// --- SUSPICION BOARD (SIDEBAR) ---
+function renderSuspicionBoard(state) {
+    let board = document.getElementById('suspicion-board');
+    if (!board) {
+        const sidebar = document.getElementById('game-sidebar');
+        if (!sidebar) return;
+        board = document.createElement('div');
+        board.id = 'suspicion-board';
+        // HTML Structure handled by CSS now
+        // Insert before tabs
+        const tabs = document.getElementById('sidebar-tabs');
+        sidebar.insertBefore(board, tabs);
+    }
+
+    // Calculate Ranks
+    const suspects = state.players
+        .filter(p => !['Pháp Y'].includes(p.role)) // Exclude Scientist
+        .filter(p => p.suspicionCount > 0)
+        .sort((a, b) => b.suspicionCount - a.suspicionCount)
+        .slice(0, 3); // Top 3
+
+    if (suspects.length === 0) {
+        board.classList.add('hidden');
+        return;
+    }
+
+    board.classList.remove('hidden');
+    // Header with Icon
+    board.innerHTML = `<h5><span style="font-size:1.2em">🔥</span> DIỆN TÌNH NGHI</h5>`;
+
+    suspects.forEach((p, idx) => {
+        const row = document.createElement('div');
+        row.className = `suspicion-item rank-${idx + 1}`;
+
+        const rankIcon = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+
+        row.innerHTML = `
+            <span class="suspicion-rank">${rankIcon}</span>
+            <span class="suspicion-text" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size: 0.9em; flex: 1;">
+                 <strong style="color:#eee;">${p.name}:</strong> 
+                 <span style="color:#ff6b6b; font-weight:bold;">${p.suspicionCount} tình nghi</span>
+            </span>
+        `;
+        board.appendChild(row);
+    });
 }
 
 // --- SIDEBAR TABS LOGIC ---
@@ -1107,4 +1182,107 @@ function visualize(analyser, userId) {
         requestAnimationFrame(checkVolume);
     };
     checkVolume();
+}
+
+// Context Menu Helper (Moved from helper file)
+function showContextMenu(x, y, targetId) {
+    // Remove old
+    const old = document.getElementById('context-menu');
+    if (old) old.remove();
+
+    const menu = document.createElement('div');
+    menu.id = 'context-menu';
+    // FORCE INLINE STYLES
+    menu.style.position = 'fixed';
+    menu.style.top = y + 'px';
+    menu.style.left = x + 'px';
+    menu.style.backgroundColor = '#222';
+    menu.style.border = '1px solid #ffa502';
+    menu.style.padding = '8px';
+    menu.style.borderRadius = '20px';
+    menu.style.display = 'flex';
+    menu.style.gap = '8px';
+    menu.style.zIndex = '9999';
+    menu.style.boxShadow = '0 5px 15px rgba(0,0,0,0.5)';
+    menu.style.transition = 'opacity 0.2s';
+
+    const emojis = ['🤔', '👍', '👎', '😂', '🔥', '👀'];
+
+    emojis.forEach(e => {
+        const btn = document.createElement('span');
+        btn.innerText = e;
+        btn.style.cursor = 'pointer';
+        btn.style.fontSize = '1.5rem';
+        btn.style.transition = 'transform 0.2s';
+
+        btn.onmouseover = () => btn.style.transform = 'scale(1.3)';
+        btn.onmouseout = () => btn.style.transform = 'scale(1)';
+
+        btn.onclick = () => {
+            socket.emit('send_reaction', { targetId, emoji: e });
+            menu.remove();
+        };
+        menu.appendChild(btn);
+    });
+
+    // Close on click outside
+    setTimeout(() => {
+        document.addEventListener('click', () => menu.remove(), { once: true });
+    }, 10);
+
+    document.body.appendChild(menu);
+}
+
+// --- REACTIONS VISUALIZER ---
+function showReaction(data) {
+    const { targetId, emoji } = data;
+
+    // Find Target Element (Must be VISIBLE)
+    const candidates = document.querySelectorAll(`[data-id="${targetId}"]`);
+    let targetEl = null;
+    for (const el of candidates) {
+        // offsetParent is null if element or ancestor is display: none
+        if (el.offsetParent !== null && (el.classList.contains('player-card') || el.classList.contains('suspect-container'))) {
+            targetEl = el;
+            break;
+        }
+    }
+
+    if (targetEl) {
+        const floatEl = document.createElement('div');
+        floatEl.innerText = emoji;
+
+        // INLINE STYLES (Robustness)
+        floatEl.style.position = 'fixed';
+        floatEl.style.fontSize = '3rem';
+        floatEl.style.pointerEvents = 'none';
+        floatEl.style.zIndex = '10000';
+        floatEl.style.textShadow = '0 2px 5px rgba(0,0,0,0.5)';
+
+        // Position relative to target
+        const rect = targetEl.getBoundingClientRect();
+        const startX = rect.left + rect.width / 2;
+        const startY = rect.top + rect.height / 2;
+
+        floatEl.style.left = startX + 'px';
+        floatEl.style.top = startY + 'px';
+        // Center the transform origin
+        floatEl.style.transform = 'translate(-50%, -50%)';
+
+        document.body.appendChild(floatEl);
+
+        // WEB ANIMATIONS API (No CSS needed)
+        const animation = floatEl.animate([
+            { transform: 'translate(-50%, -50%) scale(0.5)', opacity: 0, offset: 0 },
+            { transform: 'translate(-50%, -50%) scale(1.2)', opacity: 1, offset: 0.2 },
+            { transform: 'translate(-50%, -150px) scale(1)', opacity: 0, offset: 1 }
+        ], {
+            duration: 2000,
+            easing: 'ease-out',
+            fill: 'forwards'
+        });
+
+        // Cleanup
+        animation.onfinish = () => floatEl.remove();
+    }
 }
