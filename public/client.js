@@ -379,36 +379,40 @@ function renderAdminGameControls(state) {
         headerFound: !!gameInfo
     });
 
-    if (state.gameState === 'INVESTIGATION' && state.round < 3 && gameInfo) {
+    // Strategies failed. Using brute-force FIXED positioning.
+    if (state.gameState === 'INVESTIGATION' && state.round < 3) {
         let btnNext = document.getElementById('btn-next-round');
         if (!btnNext) {
             btnNext = document.createElement('button');
             btnNext.id = 'btn-next-round';
-            // btnNext.className = 'admin-btn'; // Conflict with header styles?
             btnNext.innerHTML = "Qua Vòng Tiếp &raquo;";
 
-            // Header Button Styles
-            btnNext.style.marginLeft = '20px';
+            // Fixed Button Styles
+            btnNext.style.position = 'fixed';
+            btnNext.style.top = '10px';
+            btnNext.style.right = '10px';
+            btnNext.style.zIndex = '3000'; // Top of everything
+
             btnNext.style.fontSize = '0.9rem';
             btnNext.style.padding = '5px 15px';
             btnNext.style.background = '#2ecc71';
             btnNext.style.color = '#fff';
-            btnNext.style.border = 'none';
+            btnNext.style.border = '2px solid #fff'; // White border for contrast
             btnNext.style.borderRadius = '4px';
             btnNext.style.cursor = 'pointer';
             btnNext.style.fontWeight = 'bold';
-            btnNext.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            btnNext.style.boxShadow = '0 2px 10px rgba(0,0,0,0.5)';
 
             btnNext.onclick = (e) => {
-                e.stopPropagation();
+                e.preventDefault();
                 if (confirm("Chuyển sang vòng tiếp theo?")) {
                     socket.emit('next_round');
                 }
             };
-            gameInfo.appendChild(btnNext);
+            document.body.appendChild(btnNext);
         }
     } else {
-        // Cleanup
+        // Cleanup logic remains same... but let's just replace the whole block to be safe.
         let btnNext = document.getElementById('btn-next-round');
         if (btnNext) btnNext.remove();
     }
