@@ -42,11 +42,7 @@
                 </label>
             </div>
 
-            <!-- Voice Controls -->
-            <div id="voice-controls" style="margin-bottom: 20px; text-align: center;">
-                <button id="btn-mic" class="admin-btn" style="background: #e74c3c;">🔇 Bật Mic</button>
-                <div id="voice-status" style="font-size: 0.8rem; color: #777; margin-top: 5px;">Chưa kết nối</div>
-            </div>
+            <!-- Voice Controls Moved to Sidebar -->
 
             <div id="player-list" class="player-grid"></div>
             <div class="controls">
@@ -112,6 +108,15 @@
                         <div id="tab-content-area">
                             <!-- CHAT TAB -->
                             <div id="tab-chat" class="tab-pane active">
+                                <!-- Voice Controls -->
+                                <div id="voice-controls"
+                                    style="padding: 10px; text-align: center; border-bottom: 1px solid #444; background: rgba(0,0,0,0.2);">
+                                    <button id="btn-mic" class="admin-btn"
+                                        style="background: #e74c3c; width: 100%; padding: 8px;">🔇 Bật Mic (Voice
+                                        Chat)</button>
+                                    <div id="voice-status" style="font-size: 0.75rem; color: #bbb; margin-top: 4px;">
+                                        Chưa kết nối</div>
+                                </div>
                                 <div id="chat-messages"></div>
                                 <div class="chat-input-area">
                                     <input type="text" id="chat-input" placeholder="Nói gì đó..." autocomplete="off">
