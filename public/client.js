@@ -368,16 +368,27 @@ function renderAdminGameControls(state) {
     // Check if we need to show "Next Round" button
     let btnNext = document.getElementById('btn-next-round');
 
+    // Show in Round 1 & 2 (To go to 2 & 3). Also allow in Round 3 if we want to trigger something? 
+    // Standard rule: 3 rounds.
     if (state.gameState === 'INVESTIGATION' && state.round < 3) {
         if (!btnNext) {
             btnNext = document.createElement('button');
             btnNext.id = 'btn-next-round';
             btnNext.className = 'admin-btn';
-            btnNext.innerText = "Qua Vòng Mới >>";
+            btnNext.innerHTML = "Qua Vòng Tiếp &raquo;";
             btnNext.style.position = 'fixed';
-            btnNext.style.top = '60px'; // Below header
-            btnNext.style.right = '10px';
-            btnNext.onclick = () => socket.emit('next_round');
+            btnNext.style.top = '85px'; // Increased to avoid header overlap
+            btnNext.style.right = '20px';
+            btnNext.style.zIndex = '2000'; // Make sure it's on top
+            btnNext.style.background = 'linear-gradient(45deg, #16a085, #2ecc71)';
+            btnNext.style.color = '#fff';
+            btnNext.style.boxShadow = '0 4px 10px rgba(0,0,0,0.5)';
+
+            btnNext.onclick = () => {
+                if (confirm("Bạn có chắc muốn chuyển sang vòng tiếp theo?")) {
+                    socket.emit('next_round');
+                }
+            };
             document.body.appendChild(btnNext);
         }
         btnNext.style.display = 'block';
